@@ -7,10 +7,13 @@ export const Form = styled.form`
 
   input {
     flex: 1;
-    border: 1px solid #eee;
     padding: 10px 15px;
     border-radius: 4px;
     font-size: 16px;
+
+    ${props =>
+    props.errorGetRepo ? "border: 1px solid red" : "border: 1px solid #eee"}
+
   }
 `;
 
@@ -44,13 +47,13 @@ export const SubmitButton = styled.button.attrs(props => ({
   }
 
   ${props =>
-    props.loading ?
-    css`
-      svg {
-        animation: ${rotate} 2s linear infinite;
-      }
-    `
-    : undefined}
+    props.loading
+      ? css`
+          svg {
+            animation: ${rotate} 2s linear infinite;
+          }
+        `
+      : undefined}
 `;
 
 export const List = styled.ul`
