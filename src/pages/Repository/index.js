@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import api from '../../services/api';
 
 import Container from '../../components/Container';
-import { IssueList, Loading, Owner } from './styles';
+import { IssueList, Loading, Owner, StateFilter } from './styles';
 
 export default class Repository extends Component {
   static propTypes = {
@@ -16,9 +16,10 @@ export default class Repository extends Component {
   };
 
   state = {
-    repository:{},
+    repository: {},
     issues: [],
     loading: true,
+    selectedRadio: 'all',
   };
 
   async componentDidMount() {
@@ -40,25 +41,83 @@ export default class Repository extends Component {
       repository: repository.data,
       issues: issues.data,
       loading: false,
+    });
+  }
+
+  //TODO bug
+  handleRadioChange = async (e) => {
+    const { match } = this.props;
+    const repoName = decodeURIComponent(match.params.repository);
+
+    this.setState({ selectedRadio: e.target.name });
+    const issueState = e.target.name;
+
+    console.log(issueState);
+
+    const issues = await api.get(`/repos/${repoName}/issues`, {
+      params: {
+        state: issueState,
+        per_page: 5,
+      }
+    });
+
+    this.setState({
+      issues: issues.data,
     })
 
-  }
+    // console.log('state depois: ');
+    // console.log(this.state.issues);
+  };
 
   render() {
     const { repository, issues, loading } = this.state;
 
-    if(loading) {
-      return <Loading>Carregando</Loading>
+    if (loading) {
+      return <Loading>Carregando</Loading>;
     }
     return (
       <Container>
         <Owner>
           <Link to="/">Voltar aos repositórios</Link>
-          <img src={repository.owner.avatar_url} alt={repository.owner.login}/>
+          <img src={repository.owner.avatar_url} alt={repository.owner.login} />
           <h1>{repository.name}</h1>
           <p>{repository.description}</p>
         </Owner>
+        <StateFilter>
+          {/*TODO style it better */}
+          <label>
+            <input
+              type="radio"
+              checked={this.state.selectedRadio === 'all'}
+              value="all"
+              name="all"
+              onChange={this.handleRadioChange}
+            ></input>
+            All
+          </label>
 
+          <label>
+            <input
+              type="radio"
+              checked={this.state.selectedRadio === 'open'}
+              value="open"
+              name="open"
+              onChange={this.handleRadioChange}
+            ></input>
+            Open
+          </label>
+
+          <label>
+            <input
+              type="radio"
+              checked={this.state.selectedRadio === 'closed'}
+              value="closed"
+              name="closed"
+              onChange={this.handleRadioChange}
+            ></input>
+            Closed
+          </label>
+        </StateFilter>
         <IssueList>
           {issues.map(issue => (
             <li key={String(issue.id)}>
