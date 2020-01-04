@@ -52,8 +52,6 @@ export default class Repository extends Component {
     this.setState({ selectedRadio: e.target.name });
     const issueState = e.target.name;
 
-    console.log(issueState);
-
     const issues = await api.get(`/repos/${repoName}/issues`, {
       params: {
         state: issueState,
