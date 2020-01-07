@@ -61,7 +61,7 @@ export default class Main extends Component {
         errorGetRepo: false
       });
     } catch (error) {
-      //TODO add error message to user(duplicated in state | not found)
+      //TODO add error message to user(duplicated in state | repo not found)
       this.setState({
         errorGetRepo: true,
       });
