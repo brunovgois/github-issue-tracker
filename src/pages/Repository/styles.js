@@ -1,4 +1,31 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
+
+export const Pagination = styled.div.attrs(props => ({
+  disabled: props.disablePaginationBtn,
+}))`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+
+  button {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #7159c1;
+  }
+
+  button:first-child {
+    ${props =>
+      props.disabled
+        ? css`
+            pointer-events: none;
+            cursor: default;
+            opacity: 0.5;
+          `
+        : undefined}
+  }
+`;
 
 export const Loading = styled.div`
   color: #fff;

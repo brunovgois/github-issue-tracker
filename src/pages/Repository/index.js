@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import api from '../../services/api';
-
+import { FaArrowRight, FaArrowLeft } from 'react-icons/fa';
 import Container from '../../components/Container';
-import { IssueList, Loading, Owner, StateFilter } from './styles';
+import { IssueList, Loading, Owner, StateFilter, Pagination } from './styles';
 
 export default class Repository extends Component {
   static propTypes = {
@@ -20,6 +20,8 @@ export default class Repository extends Component {
     issues: [],
     loading: true,
     selectedRadio: 'all',
+    disablePaginationBtn: true,
+    currentPage: 1
   };
 
   async componentDidMount() {
@@ -44,7 +46,6 @@ export default class Repository extends Component {
     });
   }
 
-  //TODO bug
   handleRadioChange = async (e) => {
     const { match } = this.props;
     const repoName = decodeURIComponent(match.params.repository);
@@ -52,23 +53,55 @@ export default class Repository extends Component {
     this.setState({ selectedRadio: e.target.name });
     const issueState = e.target.name;
 
+    //TODO duplicated code
     const issues = await api.get(`/repos/${repoName}/issues`, {
       params: {
         state: issueState,
         per_page: 5,
-      }
+        page: this.state.currentPage,
+      },
     });
 
     this.setState({
       issues: issues.data,
-    })
+    });
 
-    // console.log('state depois: ');
-    // console.log(this.state.issues);
   };
 
+  handlePagination = async pages => {
+    const { match } = this.props;
+    const repoName = decodeURIComponent(match.params.repository);
+
+    if(pages === 'right') {
+      this.setState({disablePaginationBtn: false});
+      this.setState(prevState => {
+        return {currentPage: prevState.currentPage + 1}
+      })
+    }
+    else{
+      if(this.state.currentPage === 1)
+        this.setState({disablePaginationBtn: true});
+
+      this.setState(prevState => {
+        return {currentPage: prevState.currentPage - 1}
+      })
+    }
+
+    const issues = await api.get(`/repos/${repoName}/issues`, {
+      params: {
+        state: this.state.selectedRadio,
+        per_page: 5,
+        page: this.state.currentPage,
+      }
+    });
+
+   this.setState({
+      issues: issues.data,
+    });
+  }
+
   render() {
-    const { repository, issues, loading } = this.state;
+    const { repository, issues, loading, disablePaginationBtn } = this.state;
 
     if (loading) {
       return <Loading>Carregando</Loading>;
@@ -132,6 +165,10 @@ export default class Repository extends Component {
             </li>
           ))}
         </IssueList>
+        <Pagination disablePaginationBtn={disablePaginationBtn}>
+          <button onClick={() => this.handlePagination('left')}><FaArrowLeft /> </button>
+          <button onClick={() => this.handlePagination('right')}><FaArrowRight /> </button>
+        </Pagination>
       </Container>
     );
   }
